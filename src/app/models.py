@@ -62,3 +62,18 @@ class CollectionRunRecord(CollectionStats):
     id: int
     status: str
 
+
+class AIHotspotItem(BaseModel):
+    title: str
+    link: str
+    published_at: datetime
+
+
+class AIHotspotSummaryResponse(BaseModel):
+    date: str
+    timezone: str
+    source_name: str
+    source_url: str
+    model: str
+    summary_titles: list[str] = Field(default_factory=list)
+    items: list[AIHotspotItem] = Field(default_factory=list)

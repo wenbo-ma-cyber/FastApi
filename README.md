@@ -58,6 +58,7 @@ PYTHONPATH=src python3 -m app.cli
 - `POST /api/v1/collect`：立即执行一次采集
 - `GET /api/v1/runs/latest`：查看最近一次采集任务
 - `GET /api/v1/sources`：查看当前采集源
+- `GET /scrape-ai-hotspot`：抓取今日 AI 热点并用 GPT-5.4 总结成 3 条中文标题
 
 ## 常用环境变量
 
@@ -68,6 +69,9 @@ AI_HOT_COLLECT_ON_STARTUP=false
 AI_HOT_COLLECT_HOUR=8
 AI_HOT_COLLECT_MINUTE=0
 AI_HOT_SCHEDULER_TIMEZONE=Asia/Shanghai
+AI_HOT_OPENAI_MODEL=gpt-5.4
+AI_HOT_HOTSPOT_SOURCE_URL=https://news.google.com/rss/search?q=artificial+intelligence+OR+OpenAI+OR+Anthropic+OR+DeepMind&hl=en-US&gl=US&ceid=US:en
+OPENAI_API_KEY=your_api_key
 ```
 
 如果要自定义采集源，可以设置 `AI_HOT_FEED_SOURCES`，值为 JSON 数组，例如：
@@ -87,3 +91,4 @@ AI_HOT_SCHEDULER_TIMEZONE=Asia/Shanghai
 
 - 当前“热点”排序使用发布时间和关键词命中的简单加权规则，适合做日报/看板的第一版。
 - RSS 源偶发失败不会中断整次任务，失败信息会记录到最近一次采集任务状态中。
+- `/scrape-ai-hotspot` 会实时请求公开 RSS，并调用 OpenAI `v1/responses` 接口使用 `gpt-5.4` 生成严格 3 条中文标题。

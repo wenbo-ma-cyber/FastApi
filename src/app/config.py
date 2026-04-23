@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -55,6 +56,12 @@ class Settings(BaseSettings):
     collect_hour: int = 8
     collect_minute: int = 0
     scheduler_timezone: str = "Asia/Shanghai"
+    openai_api_key: str | None = None
+    openai_model: str = "gpt-5.4"
+    openai_request_timeout_seconds: float = 30.0
+    hotspot_source_name: str = "Google News AI"
+    hotspot_source_url: str = DEFAULT_FEEDS[0]["url"]
+    hotspot_max_items: int = 8
     feed_sources: list[FeedSource] = Field(
         default_factory=lambda: [FeedSource(**item) for item in DEFAULT_FEEDS]
     )
@@ -73,8 +80,14 @@ class Settings(BaseSettings):
     def normalize_database_path(cls, value: Any) -> Path:
         return Path(value).expanduser()
 
+    @field_validator("openai_api_key", mode="before")
+    @classmethod
+    def resolve_openai_api_key(cls, value: Any) -> str | None:
+        if value not in (None, ""):
+            return str(value)
+        return os.getenv("OPENAI_API_KEY")
+
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-

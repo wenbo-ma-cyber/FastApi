@@ -4,9 +4,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import router
+from app.api import api_router, public_router
 from app.collector import RSSCollector
 from app.config import Settings, get_settings
+from app.hotspot import AIHotspotService
 from app.repository import TopicRepository
 from app.scheduler import create_scheduler
 from app.service import TopicService
@@ -19,6 +20,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         display_timezone=app_settings.scheduler_timezone,
     )
     collector = RSSCollector(app_settings)
+    ai_hotspot_service = AIHotspotService(app_settings)
     service = TopicService(
         settings=app_settings,
         repository=repository,
@@ -30,6 +32,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         repository.init_db()
         application.state.settings = app_settings
         application.state.topic_service = service
+        application.state.ai_hotspot_service = ai_hotspot_service
         application.state.scheduler = None
 
         if app_settings.scheduler_enabled:
@@ -51,7 +54,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         title=app_settings.app_name,
         lifespan=lifespan,
     )
-    application.include_router(router, prefix=app_settings.api_prefix)
+    application.include_router(api_router, prefix=app_settings.api_prefix)
+    application.include_router(public_router)
 
     @application.get("/")
     def index() -> dict[str, str]:
@@ -65,4 +69,3 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
 
 app = create_app()
-
